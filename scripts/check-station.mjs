@@ -1,0 +1,13 @@
+import {PORT,REPAIR} from '../src/expedition.ts';
+import assert from 'node:assert/strict';
+const memory=new Map();globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
+const {useGame}=await import('../src/store.ts');const {useExpedition}=await import('../src/expeditionStore.ts');
+const g=()=>useGame.getState(),e=()=>useExpedition.getState();
+g().set({started:true,flightPosition:[PORT[0],PORT[1],PORT[2]+2],flightRotation:[0,0,0,1],speed:2});assert.equal(e().tryDock(),false);
+g().set({speed:.1});e().accept('orbital');assert(e().tryDock());for(let i=0;i<31;i++)e().advance(.1);assert.equal(e().dock,'docked');assert(e().missions.orbital.done.includes('dock'));
+e().enterStation();assert.equal(e().mode,'station');e().set({interior:[7,7]});e().interactInterior();assert.equal(e().panel,'missions');e().set({panel:null});e().startEva();assert.equal(e().mode,'eva');e().recover();assert.equal(e().mode,'station');assert(!e().missions.orbital.done.includes('return'),'Returning before repair must not fake objective completion');e().startEva();
+e().set({suit:{...e().suit,position:[...REPAIR]}});for(let i=0;i<31;i++)e().repair(.1);assert(e().repaired);assert(e().missions.orbital.done.includes('repair'));
+e().recover();assert.equal(e().mode,'eva','Remote airlock interaction must fail');e().set({suit:{...e().suit,position:[PORT[0],PORT[1],PORT[2]+2]}});e().recover();assert.equal(e().mode,'station');assert.equal(e().missions.orbital.status,'complete');assert.equal(g().points,250);e().recover();assert.equal(g().points,250);
+e().set({missions:{...e().missions,orbital:{status:'active',done:[],elapsed:0,reason:''}}});e().startEva();e().set({suit:{...e().suit,oxygen:0}});e().advance(.1);assert.equal(e().mode,'station');assert.equal(e().missions.orbital.status,'failed');
+const points=g().points;const saved=memory.get('pamir-space-lab-v2');e().startPresentation();g().set({points:99999});assert.equal(memory.get('pamir-space-lab-v2'),saved,'Presentation must not overwrite Phase 2 save');e().endPresentation();assert.equal(g().points,points);
+console.log('Station integration checks passed: guarded docking, capture, interior terminals, EVA repair, airlock proximity, rewards, oxygen recovery and protected presentation saves.');

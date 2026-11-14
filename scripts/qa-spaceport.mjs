@@ -1,0 +1,27 @@
+import fs from 'node:fs/promises';
+let target;for(let i=0;i<50&&!target;i++){try{target=await(await fetch('http://127.0.0.1:9333/json/new?about:blank',{method:'PUT'})).json();}catch(error){if(i===49)throw error;await new Promise(r=>setTimeout(r,250));}}
+const ws=new WebSocket(target.webSocketDebuggerUrl);await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject;});let seq=0;const pending=new Map(),errors=[];
+ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id){const p=pending.get(m.id);if(p){pending.delete(m.id);m.error?p.reject(m.error):p.resolve(m.result);}}if(m.method==='Runtime.exceptionThrown')errors.push(JSON.stringify(m.params.exceptionDetails));if(m.method==='Runtime.consoleAPICalled'&&m.params.type==='error')errors.push(m.params.args.map(a=>a.value??a.description).join(' '));};
+const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}));});
+const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
+const frames=n=>evaluate(`new Promise(resolve=>{let left=${n};function next(){if(--left<=0)resolve(true);else requestAnimationFrame(next);}requestAnimationFrame(next);})`);
+const shot=async name=>{const r=await send('Page.captureScreenshot',{format:'png'});await fs.writeFile('artifacts/spaceport/'+name+'.png',Buffer.from(r.data,'base64'));console.log('Captured '+name);};
+const key=(code,down)=>send('Input.dispatchKeyEvent',{type:down?'keyDown':'keyUp',key:code==='ShiftLeft'?'Shift':code.replace('Key','').toLowerCase(),code});
+try{
+  await send('Page.enable');await send('Runtime.enable');await send('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});await send('Page.navigate',{url:'http://127.0.0.1:5174/'});
+  for(let i=0;i<160;i++){if(await evaluate("!!document.querySelector('canvas')"))break;await new Promise(r=>setTimeout(r,250));}
+  const resources=await evaluate("performance.getEntriesByType('resource').map(r=>r.name)");const moduleUrl=path=>resources.find(u=>new URL(u).pathname===path)??'http://127.0.0.1:5174'+path;
+  const game=moduleUrl('/src/store.ts'),expedition=moduleUrl('/src/expeditionStore.ts'),port=moduleUrl('/src/earthPortState.ts');
+  await evaluate(`import(${JSON.stringify(expedition)}).then(m=>m.useExpedition.getState().set({...m.useExpedition.getInitialState(),graphics:'LOW',mode:'flight',dock:'free',presentation:false,panel:null}))`);
+  await evaluate(`import(${JSON.stringify(game)}).then(m=>m.useGame.getState().set({...m.useGame.getInitialState(),started:false,surface:null,paused:false,uiBlocked:false,target:'Earth'}))`);await frames(4);errors.length=0;
+  await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent.includes('BEGIN ON EARTH')).click()");await frames(45);await fs.mkdir('artifacts/spaceport',{recursive:true});
+  if(!await evaluate("!!document.querySelector('.earth-active .spaceport-hud')"))throw Error('Spaceport did not open');await shot('launch-complex');
+  await evaluate("document.querySelector('.suit-view-button').click()");await frames(45);if(!await evaluate("document.querySelector('.spaceport-hud h2').textContent.includes('FIRST EXPLORER')"))throw Error('Portrait control did not activate');await shot('gagarin-inspired-cosmonaut');
+  await evaluate("document.querySelector('.suit-view-button').click()");await frames(3);await key('ShiftLeft',true);await key('KeyW',true);
+  const route=await evaluate(`import(${JSON.stringify(port)}).then(m=>new Promise(resolve=>{let count=0;function tick(){const p=m.usePort.getState();if(p.range<5.7||count++>650)resolve({range:p.range,frames:count});else requestAnimationFrame(tick);}tick();}))`);
+  await key('KeyW',false);await key('ShiftLeft',false);await frames(6);if(route.range>=6)throw Error('Keyboard walk could not reach the boarding access: '+JSON.stringify(route));console.log('Walked to access '+JSON.stringify(route));
+  await key('KeyE',true);await frames(4);await key('KeyE',false);const phase=await evaluate(`import(${JSON.stringify(port)}).then(m=>m.usePort.getState().phase)`);if(phase!=='launch')throw Error('E did not board and launch');
+  await evaluate(`import(${JSON.stringify(port)}).then(m=>m.usePort.setState({time:4.2}))`);await frames(35);await shot('stainless-rocket-ascent');
+  await evaluate(`import(${JSON.stringify(port)}).then(m=>m.usePort.setState({time:11.85}))`);await frames(40);const result=await evaluate(`import(${JSON.stringify(game)}).then(m=>({surface:m.useGame.getState().surface,target:m.useGame.getState().target}))`);if(result.surface!==null||result.target!=='Earth')throw Error('Ascent failed to restore orbital gameplay');await shot('modern-orbital-spacecraft');
+  if(errors.length)throw Error(errors.join('\n'));console.log('Spaceport Chrome checks passed: campus, portrait, real keyboard walk, E boarding, animated ascent, modern orbital ship, zero runtime/shader errors.');
+}catch(error){console.log('Browser diagnostic: '+await evaluate("JSON.stringify({url:location.href,title:document.title,body:document.body.innerText.slice(0,1800)})"));await fs.mkdir('artifacts/spaceport',{recursive:true});await shot('qa-error');throw error;}finally{await send('Browser.close').catch(()=>{});ws.close();}

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import { publicAssetPath,publicAssetUrl } from '../src/publicAssets.ts';
+assert.equal(publicAssetPath('textures/earth-day.jpg','/pamir-space-lab/'),'/pamir-space-lab/textures/earth-day.jpg');
+assert.equal(publicAssetPath('/textures/mars.jpg','/pamir-space-lab'),'/pamir-space-lab/textures/mars.jpg');
+assert.equal(publicAssetUrl('textures/moon.jpg'),'/textures/moon.jpg');
+globalThis.document={baseURI:'https://sino07815-cpu.github.io/pamir-space-lab/index.html'};
+assert.equal(publicAssetUrl('textures/earth-day.jpg'),'/pamir-space-lab/textures/earth-day.jpg');
+globalThis.document.baseURI='http://127.0.0.1:5173/';
+assert.equal(publicAssetUrl('textures/mars.jpg'),'/textures/mars.jpg');
+delete globalThis.document;
+assert(fs.readFileSync('vite.config.ts','utf8').includes("base: './'"));
+console.log('Deployment asset checks passed: local origin, repository subpath, index.html and leading slash handling.');

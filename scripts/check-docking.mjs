@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { docking,PORT,REPAIR,stepEva,distance,interiorAllowed } from '../src/expedition.ts';
+assert(docking([PORT[0],PORT[1],PORT[2]+2],[0,0,0,1],.2).ready);
+assert(!docking([PORT[0],PORT[1],PORT[2]+6],[0,0,0,1],.2).ready);
+assert(!docking([PORT[0],PORT[1],PORT[2]+2],[0,1,0,0],.2).ready);
+assert(!docking([PORT[0],PORT[1],PORT[2]+2],[0,0,0,1],1).ready);
+assert(interiorAllowed(0,0));assert(interiorAllowed(7,8));assert(interiorAllowed(-7,-3));assert(!interiorAllowed(8,20));assert(!interiorAllowed(20,0,true));
+let suit={position:[PORT[0],PORT[1],PORT[2]+2],velocity:[0,0,0],oxygen:100,repair:0};
+for(let i=0;i<3000;i++)suit=stepEva(suit,[1,0,0],true,PORT,1/60);
+assert(distance(suit.position,PORT)<=12.0001);assert(suit.oxygen<100);assert(distance(REPAIR,PORT)<12);
+console.log('Docking/EVA model checks passed: distance, heading, velocity, interior bounds, tether and oxygen.');

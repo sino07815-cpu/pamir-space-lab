@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import { heritageSites,heritageCollision,HERITAGE_REWARD } from '../src/heritageData.ts';
+import { ORBITAL_SCALE,orbitalPoint } from '../src/orbitalScale.ts';
+import { initialMars,terrainHeight } from '../src/mars.ts';
+import { moonHeight } from '../src/surfacePhysics.ts';
+const saved=new Map();globalThis.localStorage={getItem:k=>saved.get(k)??null,setItem:(k,v)=>saved.set(k,v),removeItem:k=>saved.delete(k)};
+const {useGame}=await import('../src/store.ts');const {useExpedition}=await import('../src/expeditionStore.ts');const {enterEarthPort,launchEarth,finishEarthLaunch,usePort}=await import('../src/earthPortState.ts');const g=()=>useGame.getState();
+g().set({started:true,paused:false,uiBlocked:false,points:0,heritage:[],surface:null,mars:initialMars(),moon:initialMars('Moon')});
+enterEarthPort();assert.equal(g().surface,'Earth');assert.equal(g().target,'Earth');usePort.setState({range:20});launchEarth();assert.equal(usePort.getState().phase,'walk');usePort.setState({range:4});g().set({paused:true});launchEarth();assert.equal(usePort.getState().phase,'walk');g().set({paused:false});launchEarth();assert.equal(usePort.getState().phase,'launch');const reset=g().flightReset;finishEarthLaunch();assert.equal(g().surface,null);assert.deepEqual(g().flightPosition,[0,0,20]);assert.equal(g().flightReset,reset+1);
+for(const site of heritageSites){const key=site.planet==='Mars'?'mars':'moon',height=(site.planet==='Mars'?terrainHeight:moonHeight)(site.x,site.z);g().set({surface:site.planet,[key]:{...g()[key],stage:'eva',player:[0,0,0]}});const score=g().points;g().inspectHeritage(site.id);assert.equal(g().points,score,'remote inspection rejected');g().set({[key]:{...g()[key],player:[site.x+site.radius+1,height,site.z]}});g().inspectHeritage(site.id);assert.equal(g().points,score+HERITAGE_REWARD);g().inspectHeritage(site.id);assert.equal(g().points,score+HERITAGE_REWARD,'no duplicate reward');const [x,z]=heritageCollision(site.planet,site.x,site.z);assert(Math.hypot(x-site.x,z-site.z)>=site.radius+.39);}
+assert.equal(g().heritage.length,4);assert.equal(g().points,240);const snapshot=saved.get('pamir-space-lab-v2');g().set({heritage:[],points:0});saved.set('pamir-space-lab-v2',snapshot);await useGame.persist.rehydrate();assert.equal(g().heritage.length,4);assert.equal(g().points,240);
+// A presentation may not overwrite archival discoveries or their score.
+const before=[...g().heritage];useExpedition.getState().startPresentation();useExpedition.getState().endPresentation();assert.deepEqual(g().heritage,before);assert.equal(g().points,240);
+assert.equal(ORBITAL_SCALE,12);assert.deepEqual(orbitalPoint([58,4,-55]),[696,48,-660]);assert(orbitalPoint([58,4,-55])[0]>58);
+g().set({surface:null,mars:initialMars(),moon:initialMars('Moon'),started:true});enterEarthPort(true);assert.equal(usePort.getState().phase,'landing');assert.equal(g().surface,'Earth');finishEarthLaunch();assert.equal(g().surface,'Earth','landing cannot skip to orbit');
+console.log('Heritage/Earth checks passed: guarded launch and return, four historic sites, proximity and collisions, duplicate protection, persistence, protected presentation and 12x orbital coordinates.');

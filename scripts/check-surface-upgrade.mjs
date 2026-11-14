@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import { initialLanding,initialMars,stepLanding,stepWalker,normalizeMission,operationObjectives,objectiveDone,terrainHeight,resolveGround } from '../src/mars.ts';
+import { stepSuit,freshSuit,stepRover,freshRover,moonHeight,resolveMoonGround } from '../src/surfacePhysics.ts';
+for(const planet of ['Mars','Moon']){let landing=initialLanding(planet);for(let i=0;i<12000&&landing.result==='flying';i++)landing=stepLanding(landing,1/60);assert.equal(landing.result,'safe',planet+' guidance must land safely');assert(landing.horizontalSpeed<1.5&&landing.padError<6&&landing.stability>=65);}
+for(const changes of [{vx:8},{x:25},{tilt:45}]){let l={...initialLanding(),altitude:.001,velocity:-1,x:0,z:0,assisted:false,...changes};l=stepLanding(l,.02);assert.equal(l.result,'crashed','Unsafe lateral / zone / stability state must reject touchdown');}
+const legacy={...initialMars(),stage:'complete',objectives:['land','exit','A','B','C','research','return','complete'],earned:600};legacy.landing.result='safe';delete legacy.suit;delete legacy.rover;delete legacy.motion;delete legacy.landing.x;delete legacy.landing.z;
+const restored=normalizeMission(legacy);assert.equal(restored.earned,600);assert.equal(restored.landing.x,0);assert.equal(restored.suit.health,100);assert(operationObjectives.every(([id])=>objectiveDone(restored,id)));
+const jump=(gravity,height,resolve)=>{let p={x:0,y:height(0,25),z:25,vx:0,vz:0,vy:0},peak=p.y;for(let i=0;i<600;i++){p=stepWalker(p,{x:0,z:0,jump:i===0,sprint:false},1/60,{gravity,height,resolve});peak=Math.max(peak,p.y);assert(p.y>=height(p.x,p.z));}return peak-height(0,25);};
+assert(jump(1.62,moonHeight,resolveMoonGround)>jump(3.71,terrainHeight,resolveGround)*1.8,'Moon must have lower-gravity jumping');
+let suit=freshSuit();for(let i=0;i<100;i++)suit=stepSuit(suit,1,{speed:5,heading:0,airborne:false},true);assert(suit.oxygen<100&&suit.energy<100);assert(stepSuit({...suit,oxygen:0},1,{speed:0,heading:0,airborne:false},false).health<suit.health);
+let rover={...freshRover(),occupied:true};for(let i=0;i<600;i++)rover=stepRover(rover,1,0,false,1/60,(x,z)=>[x,z]);assert(rover.distance>35&&rover.speed<=8);const yaw=rover.yaw;rover=stepRover(rover,1,1,false,.04,(x,z)=>[x,z]);assert(rover.yaw!==yaw);for(let i=0;i<60;i++)rover=stepRover(rover,0,0,true,1/60,(x,z)=>[x,z]);assert(Math.abs(rover.speed)<.01);
+console.log('Surface upgrade physics passed: 2-axis landings, landing-envelope failures, legacy saves, Moon gravity, suit resources, rover drive/steering/braking.');

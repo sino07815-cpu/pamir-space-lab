@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import { initialLanding,stepLanding,initialMars,normalizeMission,operationObjectives,objectiveDone,sites } from '../src/mars.ts';
+const memory=new Map();globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
+const {useGame}=await import('../src/store.ts');const g=()=>useGame.getState();
+const touchdown=(planet)=>{let l=initialLanding(planet);for(let i=0;i<12000&&l.result==='flying';i++)l=stepLanding(l,1/60);return l;};
+const safe=touchdown('Mars');g().set({started:true,target:'Mars',distance:9});g().enterOrbit();g().beginLanding();g().atmosphere();g().updateLanding(safe);g().exitShip();
+g().set({mars:{...g().mars,player:[9,0,4]}});g().interact();assert(g().mars.rover.occupied);g().updateRover({...g().mars.rover,distance:40,x:15,z:10});const score=g().points;g().updateRover({...g().mars.rover,distance:45});assert.equal(g().points,score);assert(g().mars.objectives.includes('rover'));g().interact();assert(!g().mars.rover.occupied);
+const inventory=[...g().samples];g().set({surface:'Mars',mars:{...g().mars,suit:{...g().mars.suit,oxygen:0,health:.1},motion:{speed:1,heading:0,airborne:false}}});g().tick(.25);assert.equal(g().mars.stage,'landed');assert.equal(g().mars.suit.rescues,1);assert.deepEqual(g().samples,inventory);g().exitShip();
+for(const site of sites){g().set({mars:{...g().mars,player:[site.x,0,site.z]}});g().interact();}g().set({mars:{...g().mars,player:[safe.x,0,safe.z+5]}});g().interact();assert.equal(g().mars.stage,'complete');assert.equal(g().mars.earned,675);assert(operationObjectives.every(([id])=>objectiveDone(g().mars,id)));
+const total=g().points;g().returnSpace();g().set({target:'Moon',distance:9});g().startMoonLanding();assert.equal(g().moon.stage,'approach');g().moonAtmosphere();assert.equal(g().surface,'Moon');const lunar=touchdown('Moon');g().updateMoonLanding(lunar);assert.equal(g().moon.stage,'landed');g().exitMoonShip();
+for(const [i,[x,z]] of [[5,5],[-7,10],[12,-9]].entries()){g().updateSurfaceMotion('Moon',[x,0,z],{speed:1,heading:0,airborne:false});g().interactMoonSurface();const p=g().points;g().interactMoonSurface();assert.equal(g().points,p);assert(g().samples.includes('Moon-'+i));}
+g().updateSurfaceMotion('Moon',[lunar.x,0,lunar.z+5],{speed:0,heading:0,airborne:false});g().interactMoonSurface();assert.equal(g().moon.stage,'complete');assert.equal(g().points,total+250);
+const saved=memory.get('pamir-space-lab-v2');g().set({mars:initialMars(),moon:initialMars('Moon'),points:0});memory.set('pamir-space-lab-v2',saved);await useGame.persist.rehydrate();assert.equal(g().points,total+250);assert.equal(g().moon.stage,'complete');assert.equal(g().mars.rover.distance,45);assert.equal(g().mars.suit.rescues,1);
+g().returnMoonOrbit();assert.equal(g().surface,null);assert.equal(g().target,'Moon');
+const manual={...initialLanding(),assisted:false,x:0,z:0};assert(stepLanding(manual,.1,true,{x:1,z:0}).velocity>stepLanding(manual,.1,false).velocity);assert(stepLanding(manual,.1,true,{x:1,z:0}).x>0);
+console.log('Surface gameplay passed: Mars mission + optional rover, safe suit recovery, full physical lunar landing/EVA/sample/return loop, duplicate protection, save/load and manual landing input.');

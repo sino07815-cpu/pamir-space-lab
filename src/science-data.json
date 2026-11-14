@@ -1,0 +1,12 @@
+{
+  "title": "PAMIR locally cached NASA educational reference",
+  "verified": "2026-11-13",
+  "notice": "Curated educational summaries, not live telemetry or engineering predictions. Game resource rates are fictional. No NASA endorsement is implied.",
+  "records": [
+    {"id":"mars","title":"MARS · ENVIRONMENT","gravity":"About 3.7 m/s²","temperature":"Approximately −153°C to 20°C","atmosphere":"Thin; mostly carbon dioxide","text":"Mars preserves evidence of a wetter ancient environment. Its thin atmosphere does not provide a breathable environment for astronauts.","source":"https://science.nasa.gov/mars/facts/","gravitySource":"https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/mars/"},
+    {"id":"moon","title":"MOON · SURFACE SCIENCE","gravity":"About one-sixth of Earth’s","temperature":"Large day/night extremes","atmosphere":"Extremely tenuous exosphere","text":"Lunar geology records Solar System history. Scientific instruments can investigate moonquakes and the Moon’s interior.","source":"https://science.nasa.gov/moon/facts/"},
+    {"id":"samples","title":"WHY ANALYZE SAMPLES?","text":"Perseverance investigates Martian geology and ancient habitability and collects rock and regolith samples. Laboratory analysis helps scientists interpret minerals and past environments.","source":"https://science.nasa.gov/mission/mars-2020-perseverance/science/"},
+    {"id":"oxygen","title":"MOXIE · USING LOCAL RESOURCES","text":"MOXIE demonstrated oxygen production from the Martian atmosphere. The base oxygen generators in this game illustrate in-situ resource utilization; their rates and costs are simplified gameplay values.","source":"https://www.nasa.gov/missions/mars-2020-perseverance/perseverance-rover/nasas-oxygen-generating-experiment-moxie-completes-mars-mission/"},
+    {"id":"eva","title":"ORBITAL MAINTENANCE","text":"Spacewalks allow astronauts to maintain and upgrade station equipment. EVA requires life support and safety systems. The game’s 12-metre tether, oxygen gauge and automatic recovery are simplified mechanics, not operational procedures.","source":"https://www.nasa.gov/international-space-station/space-station-spacewalks/"}
+  ]
+}
