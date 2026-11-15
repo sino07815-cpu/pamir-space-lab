@@ -1,3 +1,4 @@
+import {LText} from './Locale';
 import { useEffect,useMemo,useRef } from 'react';
 import { useFrame,useThree } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
@@ -24,6 +25,6 @@ export default function Rover(){
     <group ref={wheels}>{[-1,1].flatMap(x=>[-.8,0,.8].map(z=><group key={`${x}-${z}`} position={[x*.96,.38,z]}><mesh rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.38,.38,.28,12]}/><meshStandardMaterial color="#343537" roughness={.95}/></mesh><mesh rotation={[0,0,Math.PI/2]}><cylinderGeometry args={[.15,.15,.3,10]}/><meshStandardMaterial color="#969d9b" metalness={.6}/></mesh></group>))}</group>
     <mesh position={[.45,1.9,.5]}><cylinderGeometry args={[.045,.045,1.2,8]}/><meshStandardMaterial color="#c9ccbf"/></mesh><mesh position={[.45,2.45,.5]}><boxGeometry args={[.35,.2,.22]}/><meshStandardMaterial color="#647c83"/></mesh><mesh position={[-.55,1.1,.75]}><boxGeometry args={[.5,.5,.5]}/><meshStandardMaterial color="#c88457"/></mesh>
     <primitive object={lightTarget}/>{[-1,1].map(x=><group key={x}><mesh position={[x*.55,.9,-1.22]}><sphereGeometry args={[.1,10,8]}/><meshBasicMaterial color="#e4f5ee"/></mesh><spotLight position={[x*.55,.9,-1.24]} target={lightTarget} color="#e4f5ee" intensity={rover.occupied?12:0} distance={20} angle={.55} penumbra={.5}/></group>)}
-    {!rover.occupied&&<Html position={[0,3.1,0]} center distanceFactor={18} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker">PAMIR SCIENCE ROVER · E TO DRIVE</div></Html>}
+    {!rover.occupied&&<Html position={[0,3.1,0]} center distanceFactor={18} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker"><LText>{"PAMIR SCIENCE ROVER · E TO DRIVE"}</LText></div></Html>}
   </group>;
 }

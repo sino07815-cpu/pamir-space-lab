@@ -1,3 +1,4 @@
+import {LText,tr} from './Locale';
 import { useEffect,useRef,useState,type PointerEvent as ReactPointerEvent } from 'react';
 import { useGame } from './store';
 import { useExpedition } from './expeditionStore';
@@ -18,25 +19,25 @@ function HoldButton({code,label}:{code:string;label:string}){
   const [held,setHeld]=useState(false),pointer=useRef<number|null>(null);
   const release=()=>{if(pointer.current!==null)releaseInputSources('touch:button:'+code+':'+pointer.current);pointer.current=null;setHeld(false);};
   useEffect(()=>()=>releaseInputSources('touch:button:'+code+':'),[code]);
-  return <button className={'touch-action '+(held?'held':'')} data-control={code} aria-label={label} aria-pressed={held}
+  return <button className={'touch-action '+(held?'held':'')} data-control={code} aria-label={tr(label)} aria-pressed={held}
     onContextMenu={e=>e.preventDefault()} onPointerDown={e=>{if(pointer.current!==null)return;e.preventDefault();pointer.current=e.pointerId;e.currentTarget.setPointerCapture(e.pointerId);pressControl(code,'touch:button:'+code+':'+e.pointerId);setHeld(true);}}
-    onPointerUp={release} onPointerCancel={release} onLostPointerCapture={release}>{label}</button>;
+    onPointerUp={release} onPointerCancel={release} onLostPointerCapture={release}><LText>{label}</LText></button>;
 }
 function Stick(){
   const [knob,setKnob]=useState({x:0,y:0}),pointer=useRef<number|null>(null);
   const move=(e:ReactPointerEvent<HTMLDivElement>)=>{if(pointer.current!==e.pointerId)return;e.preventDefault();const r=e.currentTarget.getBoundingClientRect(),v=stickInput(e.clientX-r.left-r.width/2,e.clientY-r.top-r.height/2);setKnob(v);if(v.codes.length&&useGame.getState().surface==='Earth'&&usePort.getState().overview)usePort.setState({overview:false,portrait:false});const source='touch:stick';for(const code of ['KeyW','KeyA','KeyS','KeyD']){if(v.codes.includes(code))pressControl(code,source);else releaseInput(code,source);}};
   const release=()=>{releaseInputSources('touch:stick');pointer.current=null;setKnob({x:0,y:0});};
   useEffect(()=>()=>releaseInputSources('touch:stick'),[]);
-  return <div className="touch-stick" role="group" aria-label="Movement joystick" onContextMenu={e=>e.preventDefault()}
+  return <div className="touch-stick" role="group" aria-label={tr("Movement joystick")} onContextMenu={e=>e.preventDefault()}
     onPointerDown={e=>{if(pointer.current!==null)return;pointer.current=e.pointerId;e.currentTarget.setPointerCapture(e.pointerId);move(e);}} onPointerMove={move} onPointerUp={release} onPointerCancel={release} onLostPointerCapture={release}>
-    <span className="stick-directions">↑<br/>← MOVE →<br/>↓</span><i style={{transform:`translate(${knob.x}px,${knob.y}px)`}}/></div>;
+    <span className="stick-directions"><LText>{"↑"}</LText><br/><LText>{"← MOVE →"}</LText><br/><LText>{"↓"}</LText></span><i style={{transform:`translate(${knob.x}px,${knob.y}px)`}}/></div>;
 }
 function LookPad(){
   const pointer=useRef<{id:number;x:number;y:number}|null>(null);
-  return <div className="touch-look" role="group" aria-label="Camera swipe area" onContextMenu={e=>e.preventDefault()}
+  return <div className="touch-look" role="group" aria-label={tr("Camera swipe area")} onContextMenu={e=>e.preventDefault()}
     onPointerDown={e=>{if(pointer.current)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);pointer.current={id:e.pointerId,x:e.clientX,y:e.clientY};}}
     onPointerMove={e=>{const p=pointer.current;if(!p||p.id!==e.pointerId)return;steering.x+=Math.max(-100,Math.min(100,e.clientX-p.x));steering.y+=Math.max(-100,Math.min(100,e.clientY-p.y));pointer.current={id:e.pointerId,x:e.clientX,y:e.clientY};}}
-    onPointerUp={()=>{pointer.current=null;}} onPointerCancel={()=>{pointer.current=null;}} onLostPointerCapture={()=>{pointer.current=null;}}><span>↔ SWIPE TO LOOK</span></div>;
+    onPointerUp={()=>{pointer.current=null;}} onPointerCancel={()=>{pointer.current=null;}} onLostPointerCapture={()=>{pointer.current=null;}}><span><LText>{"↔ SWIPE TO LOOK"}</LText></span></div>;
 }
 export default function TouchControls({enabled,blocked}:{enabled:boolean;blocked:boolean}){
   const g=useGame(),e=useExpedition(),port=usePort(),research=usePlanetMissions();
@@ -58,5 +59,5 @@ export default function TouchControls({enabled,blocked}:{enabled:boolean;blocked
   if(flight)buttons.push(['KeyF','HOLD SCAN'],['KeyQ','DOWN'],['KeyZ','ROLL ↶'],['KeyX','ROLL ↷']);
   if(eva)buttons.push(['ControlLeft','DOWN']);
   if(g.surface==='Earth'&&port.phase==='walk')buttons.push(['KeyB','WALK / VIEW'],['KeyV','PORTRAIT']);
-  return <div className="touch-controls" key={context} aria-label="Touch game controls"><LookPad/><div className="touch-bottom"><div className="touch-move"><small>{descent?'ALIGN LANDER':flight?'FLIGHT':rover?'DRIVE':'MOVE'}</small><Stick/></div><div className="touch-buttons">{buttons.map(([code,label])=><HoldButton key={code} code={code} label={label}/>)}</div></div></div>;
+  return <div className="touch-controls" key={context} aria-label={tr("Touch game controls")}><LookPad/><div className="touch-bottom"><div className="touch-move"><small><LText>{descent?'ALIGN LANDER':flight?'FLIGHT':rover?'DRIVE':'MOVE'}</LText></small><Stick/></div><div className="touch-buttons"><LText>{buttons.map(([code,label])=><HoldButton key={code} code={code} label={label}/>)}</LText></div></div></div>;
 }

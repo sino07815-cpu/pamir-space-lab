@@ -10,6 +10,8 @@ Pilot a spacecraft, learn the constraints of a safe planetary landing, explore a
 
 No installation or account required. Open on a WebGL-capable computer or phone. Phones get a movement joystick, swipe camera and contextual hold buttons; landscape is recommended. Keyboard and mouse remain available on computers. Click **ENABLE SOUND**, then **JUDGE BRIEFING / DEMO GUIDE** for the presentation route. The live link becomes available after the repository's **Publish playable demo** deployment succeeds.
 
+**Тоҷикӣ · Русский · English:** choose the interface language on first launch. Use the language icon in the top header to change it later. Your choice is remembered on this browser; mission progress and scores remain unchanged. Menus, mission instructions, scientific notes, controls and results are translated. See [language support and verification](LOCALIZATION.md).
+
 **Phone controls:** drag the left stick to walk / fly / drive, swipe the 3D world or **SWIPE TO LOOK** area to turn, tap **INTERACT**, and hold **THRUST**, **BOOST** or **HOLD SCAN** when required. The footer has pause and sound controls. Use **How to Play → Enable touch controls** to switch layouts manually. Phones start at LOW graphics; the quality setting remains adjustable. See [mobile controls and validation](MOBILE.md).
 
 Open the game and choose **JUDGE BRIEFING / DEMO GUIDE → START PROTECTED PRESENTATION**. The guided route demonstrates Gateway docking, orbital EVA repair, a Mars landing, sample collection and laboratory analysis using the actual gameplay actions. Normal progress is protected and restored when the presentation ends.
@@ -97,9 +99,9 @@ This is an educational game simulation: travel distances and time are compressed
 
 React + TypeScript + Vite; React Three Fiber, Drei and Three.js for rendering; Zustand for game state and local persistence; Tailwind/CSS and Lucide for the interface. Procedural geometry and instancing reduce reliance on downloaded models. No backend or user account is needed.
 
-`npm test` runs 18 suites for flight, mission progression, landings, collision, proximity, duplicate rewards, persistence, docking/EVA, research, protected presentation saves, planet maps, orbit layout, spaceport access, contextual guidance and deployment asset paths. These automated model tests do not replace visual review, a manual playthrough or performance measurements on the presentation laptop. See [the checklist](RELEASE_CHECKLIST.md) for outstanding manual checks.
+`npm test` checks flight, mission progression, landings, collision, proximity, duplicate rewards, persistence, docking/EVA, research, protected presentation saves, planet maps, orbit layout, spaceport access, contextual guidance, audio, touch input, lunar terrain, deployment assets and localization. These automated tests do not replace visual review, a manual playthrough or performance measurements on the presentation laptop. See [the checklist](RELEASE_CHECKLIST.md) for outstanding manual checks.
 
-GitHub Actions verifies tests and the production build on pushes and pull requests. **Publish playable demo** is a manually triggered GitHub Pages workflow. Set repository Settings → Pages → Source to GitHub Actions before running it. A hosted URL is live only after that workflow succeeds. Relative asset paths support hosting under `/pamir-space-lab/`.
+GitHub Actions verifies tests and the production build on pushes and pull requests. **Publish playable demo** deploys GitHub Pages on pushes to `main` and can also be triggered manually. Set repository Settings → Pages → Source to GitHub Actions before running it. A hosted URL is live only after that workflow succeeds. Relative asset paths support hosting under `/pamir-space-lab/`.
 
 ## Further documentation
 

@@ -11,4 +11,5 @@ import './spaceport.css';
 import './missionAssist.css';
 import './mobile.css';
 import './lunar.css';
+import './locale.css';
 ReactDOM.createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);

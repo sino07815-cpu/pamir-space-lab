@@ -24,7 +24,7 @@ try{
  const wait=()=>new Promise(r=>setTimeout(r,500));
  const shot=async name=>{const r=await send('Page.captureScreenshot',{format:'png'});await fs.mkdir('artifacts/release',{recursive:true});await fs.writeFile(`artifacts/release/${name}.png`,Buffer.from(r.data,'base64'));};
  await send('Page.enable');await send('Runtime.enable');await send('Emulation.setDeviceMetricsOverride',{width:1366,height:850,deviceScaleFactor:1,mobile:false});
- await send('Page.addScriptToEvaluateOnNewDocument',{source:"localStorage.clear();localStorage.setItem('pamir-expedition-v3',JSON.stringify({state:{graphics:'LOW'},version:2}));"});
+ await send('Page.addScriptToEvaluateOnNewDocument',{source:"localStorage.clear();localStorage.setItem(\"pamir-language-v1\",JSON.stringify({language:\"en\",chosen:true}));localStorage.setItem('pamir-expedition-v3',JSON.stringify({state:{graphics:'LOW'},version:2}));"});
  await send('Page.navigate',{url});
  for(let i=0;i<80;i++){if(await evaluate("!!document.querySelector('.judge-open-button')"))break;await wait();}
  if(!await evaluate("!!document.querySelector('.judge-open-button')"))throw Error('Menu failed: '+await evaluate('document.body.innerText.slice(0,1000)'));

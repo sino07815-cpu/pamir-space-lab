@@ -1,3 +1,4 @@
+import {LText} from './Locale';
 import { Html } from '@react-three/drei';
 import { terrainHeight } from './mars';
 import { useGame } from './store';
@@ -13,9 +14,9 @@ export default function Base(){
       <mesh position={[0,1.6,-4]}><boxGeometry args={[8,3.2,.2]}/><meshStandardMaterial color="#c5c0b0"/></mesh>{[-1,1].map(side=><mesh key={side} position={[side*2.65,1.6,4]}><boxGeometry args={[2.7,3.2,.2]}/><meshStandardMaterial color="#c5c0b0"/></mesh>)}
       {!inside&&<mesh position={[0,3.25,0]}><boxGeometry args={[8.3,.2,8.3]}/><meshStandardMaterial color="#e0d7c3"/></mesh>}
       <mesh position={[0,3,0]}><boxGeometry args={[5,.05,.12]}/><meshBasicMaterial color="#c1e4dc"/></mesh>
-      <Html position={[0,4,4.2]} center distanceFactor={24} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker">PAMIR BASE · {room.name}</div></Html>
+      <Html position={[0,4,4.2]} center distanceFactor={24} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker"><LText>{"PAMIR BASE · "}</LText><LText>{room.name}</LText></div></Html>
     </group>;})}
-    {baseTerminals.map(t=><group key={t.id} position={[t.x,0,t.z]}><mesh position={[0,.6,0]}><boxGeometry args={[.8,1.2,.5]}/><meshStandardMaterial color="#53636a"/></mesh><mesh position={[0,1.2,.27]}><planeGeometry args={[.65,.5]}/><meshBasicMaterial color="#9ad0d1"/></mesh><Html position={[0,2.4,0]} center distanceFactor={18} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker">{t.name}</div></Html></group>)}
+    {baseTerminals.map(t=><group key={t.id} position={[t.x,0,t.z]}><mesh position={[0,.6,0]}><boxGeometry args={[.8,1.2,.5]}/><meshStandardMaterial color="#53636a"/></mesh><mesh position={[0,1.2,.27]}><planeGeometry args={[.65,.5]}/><meshBasicMaterial color="#9ad0d1"/></mesh><Html position={[0,2.4,0]} center distanceFactor={18} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker"><LText>{t.name}</LText></div></Html></group>)}
     <Solar x={29} z={12}/><Solar x={29} z={16}/><Structure kind="comms" x={65} z={26}/><Structure kind="oxygen" x={60} z={33}/>
     {built.map((kind,i)=><Structure key={`${kind}-${i}`} kind={kind} x={70+(i%3)*7} z={6+Math.floor(i/3)*9}/>)}
     {[0,1,2].map(i=><mesh key={i} position={[28,1,24+i*2]}><boxGeometry args={[2,2,1.5]}/><meshStandardMaterial color="#ae8e65" roughness={.8}/></mesh>)}

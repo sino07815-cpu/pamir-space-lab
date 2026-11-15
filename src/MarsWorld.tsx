@@ -1,3 +1,4 @@
+import {LText} from './Locale';
 import HeritageWorld from './Heritage';
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -76,8 +77,8 @@ export default function MarsWorld(){
     {!mars.objectives.includes('zone')&&<mesh position={[8,terrainHeight(8,6)+.04,6]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[5.8,6,48]}/><meshBasicMaterial color="#8fc9c0" transparent opacity={.55}/></mesh>}
     {sites.map(site=>{const done=mars.objectives.includes(site.id),near=Math.hypot(mars.player[0]-site.x,mars.player[2]-site.z)<3;return <group key={site.id} position={[site.x,terrainHeight(site.x,site.z),site.z]}>
       {site.id==='research'?<group>{[0,1,2,3].map(i=><mesh key={i} position={[0,.3+i*.42,0]} rotation={[0,i*.08,0]}><boxGeometry args={[3-i*.3,.4,1.4]}/><meshStandardMaterial color={i%2?'#ad7957':'#80543d'} roughness={1}/></mesh>)}</group>:!done&&<mesh position={[0,.35,0]} rotation={[.2,.4,.1]}><dodecahedronGeometry args={[.48,0]}/><meshStandardMaterial color={near?'#e5c27f':'#bb8a5d'} emissive={near?'#a86c2d':'#292017'} emissiveIntensity={.5} roughness={.8}/></mesh>}
-      {!done&&<><mesh rotation={[-Math.PI/2,0,0]} position={[0,.04,0]}><ringGeometry args={[.8,near?1: .86,32]}/><meshBasicMaterial color={near?'#ffe1a2':'#9fbeaa'} transparent opacity={.7}/></mesh>{mars.stage==='eva'&&<Html position={[0,2.8,0]} center distanceFactor={20} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className={'world-marker '+(near?'near':'')}><strong>{site.id==='research'?'RESEARCH TARGET':`SAMPLE ${site.id}`}</strong><span>{Math.round(Math.hypot(mars.player[0]-site.x,mars.player[2]-site.z))} m</span></div></Html>}</>}
+      {!done&&<><mesh rotation={[-Math.PI/2,0,0]} position={[0,.04,0]}><ringGeometry args={[.8,near?1: .86,32]}/><meshBasicMaterial color={near?'#ffe1a2':'#9fbeaa'} transparent opacity={.7}/></mesh>{mars.stage==='eva'&&<Html position={[0,2.8,0]} center distanceFactor={20} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className={'world-marker '+(near?'near':'')}><strong><LText>{site.id==='research'?'RESEARCH TARGET':`SAMPLE ${site.id}`}</LText></strong><span><LText>{Math.round(Math.hypot(mars.player[0]-site.x,mars.player[2]-site.z))}</LText><LText>{" m"}</LText></span></div></Html>}</>}
     </group>;})}
-    {mars.stage==='eva'&&<Html position={[mars.landing.x,4,mars.landing.z+5]} center distanceFactor={25} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker">ODYSSEY · AIRLOCK</div></Html>}
+    {mars.stage==='eva'&&<Html position={[mars.landing.x,4,mars.landing.z+5]} center distanceFactor={25} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker"><LText>{"ODYSSEY · AIRLOCK"}</LText></div></Html>}
   </>;
 }
