@@ -24,3 +24,11 @@ Touch uses the existing flight, landing, walking, sample, repair and rover simul
 `npm test` includes 17 suites. The touch suite checks joystick deadzone/clamping, independent fingers, keyboard coexistence, real flight acceleration/braking/steering, single interaction edges and cancellation/reset.
 
 `node scripts/qa-touch.mjs` is an optional Windows Chrome check using an isolated profile and trusted CDP touch events. It checks 390×844 and 844×390 layouts, actual Earth walking, multi-touch, cancellation, pause, spacecraft acceleration/rotation, camera switching, landing thrust and dashboard access. Its mission state fixtures start scenes directly; it is not a claim of a complete manual mission playthrough. Screenshots and the result report are written to ignored `artifacts/mobile/` only after the relevant steps run. Browser emulation does not certify every physical Android/iOS device.
+
+## Published release checks — 15 November 2026
+
+The 17 model/input suites and production build passed in GitHub Actions. The separate development-server fixture runner above did not reach the game in this environment, so its scene-fixture checks are not counted as passed.
+
+`node scripts/qa-mobile-live.mjs` passed against the actual GitHub Pages site: portrait menu, controls inside both viewport sizes, trusted joystick input, actual boarding-distance reduction while walking, two simultaneous fingers, cancellation cleanup, pause/resume, touch scrolling in Mission Control, original desktop layout, actual keyboard walking and zero runtime exceptions. Live screenshots and `live-verification.json` are in ignored `artifacts/mobile/` locally. A final small refinement hides the unsupported sprint button while driving the Mars rover and labels the remote robot's supported faster speed separately.
+
+Physical Android/iPhone testing, a full manual mobile mission playthrough and device-specific frame-rate measurements remain manual checks. Phone saves are local to that browser; progress is not synchronized with a separate computer.

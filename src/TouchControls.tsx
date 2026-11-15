@@ -54,7 +54,7 @@ export default function TouchControls({enabled,blocked}:{enabled:boolean;blocked
   const buttons:[string,string][]=[];
   if(!interior)buttons.push(['Space',descent?'THRUST':eva?'UP':flight||rover?'BRAKE':'JUMP']);
   if(!descent)buttons.push(['KeyE',flight?'UP / USE':eva?'REPAIR / USE':rover?'USE / EXIT':'INTERACT']);
-  if(!descent)buttons.push(['ShiftLeft',flight||eva?'BOOST':'RUN'],['KeyC','CAMERA']);
+  if(!descent){if(!(g.surface==='Mars'&&g.mars.rover.occupied))buttons.push(['ShiftLeft',flight||eva?'BOOST':robot?'FAST DRIVE':'RUN']);buttons.push(['KeyC','CAMERA']);}
   if(flight)buttons.push(['KeyF','HOLD SCAN'],['KeyQ','DOWN'],['KeyZ','ROLL ↶'],['KeyX','ROLL ↷']);
   if(eva)buttons.push(['ControlLeft','DOWN']);
   if(g.surface==='Earth'&&port.phase==='walk')buttons.push(['KeyB','WALK / VIEW'],['KeyV','PORTRAIT']);
