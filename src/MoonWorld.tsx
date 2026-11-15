@@ -11,6 +11,8 @@ import { keys,consume,steering,resetInput } from './input';
 import LunarLander from './LunarLander';
 import LunarEarth from './LunarEarth';
 import LunarTerrain from './LunarTerrain';
+import Sun from './Sun';
+import {LUNAR_SUN_DIRECTION} from './solarLighting';
 import { Astronaut } from './MarsWorld';
 
 export {default as MoonHUD} from './LunarHUD';
@@ -35,7 +37,7 @@ export default function MoonWorld(){
     const pressed=consume('KeyE');telemetry.current+=dt;if(telemetry.current>.1||pressed){telemetry.current=0;s.updateSurfaceMotion('Moon',[p.x,p.y,p.z],{speed:moving.current,heading:view.current.yaw,airborne:p.y>moonHeight(p.x,p.z)+.05});e.set({moonPosition:[p.x,p.y,p.z]});}
     if(pressed){const nearby=moonSamples.some(site=>!s.samples.includes('Moon-'+site.id)&&Math.hypot(p.x-site.x,p.z-site.z)<3);const ship=Math.hypot(p.x-m.landing.x,p.z-m.landing.z-5)<3;if(nearby||ship){s.interactMoonSurface();if(ship)e.returnMoon(false);}else e.interactMoon();}
   });
-  return <><color attach="background" args={['#010204']}/><ambientLight intensity={.045}/><hemisphereLight args={['#bdc9d7','#77716a',.16]}/><directionalLight name="Lunar-low-angle-sun" castShadow position={[-65,38,45]} intensity={3.5} color="#fff6e8" shadow-mapSize-width={quality==='LOW'?1024:2048} shadow-mapSize-height={quality==='LOW'?1024:2048} shadow-camera-left={-75} shadow-camera-right={75} shadow-camera-top={75} shadow-camera-bottom={-75} shadow-camera-near={.5} shadow-camera-far={220} shadow-normalBias={.035} shadow-bias={-.00015}/><LunarTerrain/><group ref={history}><HeritageWorld planet="Moon"/></group>
+  return <><color attach="background" args={['#010204']}/><Sun lunar/><ambientLight intensity={.095}/><hemisphereLight args={['#bdc9d7','#77716a',.5]}/><directionalLight name="Lunar-low-angle-sun" castShadow position={LUNAR_SUN_DIRECTION} intensity={3.5} color="#fff6e8" shadow-mapSize-width={quality==='LOW'?1024:2048} shadow-mapSize-height={quality==='LOW'?1024:2048} shadow-camera-left={-75} shadow-camera-right={75} shadow-camera-top={75} shadow-camera-bottom={-75} shadow-camera-near={.5} shadow-camera-far={220} shadow-normalBias={.035} shadow-bias={-.00015}/><LunarTerrain/><group ref={history}><HeritageWorld planet="Moon"/></group>
     <Suspense fallback={null}><LunarEarth/></Suspense>
     <mesh position={[0,.018,13]} rotation={[-Math.PI/2,0,0]}><ringGeometry args={[5.74,5.8,96]}/><meshBasicMaterial color="#c4ad79" transparent opacity={.28} depthWrite={false}/></mesh>
     <group ref={lander} name="Lunar-lander-root" position={[moon.landing.x,moonHeight(moon.landing.x,moon.landing.z)+moon.landing.altitude,moon.landing.z]}><LunarLander/><group ref={flames} position={[0,.6,0]}>{[-1,1].map(x=><mesh key={x} position={[x*.36,-.65,0]} rotation={[Math.PI,0,0]}><coneGeometry args={[.18,1.5,16]}/><meshBasicMaterial color="#b0e4ff" transparent opacity={.65} depthWrite={false}/></mesh>)}</group></group>

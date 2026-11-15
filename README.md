@@ -20,7 +20,7 @@ Allow **3–5 minutes**. The model route completes in about 146 simulated second
 
 ## Lunar exploration update
 
-The Moon scene now has cratered regolith, continuous distant ridges, a small distant Earth, ground-contact shadows, a brushed-metal reusable lander with landing gear and a walking boot trail. Its compact survey/descent HUD also supports touch controls. See [lunar visuals and verification](LUNAR_VISUALS.md).
+The Moon scene now has cratered regolith, continuous distant ridges, a visible Sun, a small distant Earth, ground-contact shadows, a brushed-metal reusable lander with landing gear and a walking boot trail. Its compact survey/descent HUD also supports touch controls. See [lunar visuals and verification](LUNAR_VISUALS.md) and [visible Sun](SUN.md).
 
 ![Actual lunar gameplay renderer, isolated review scene](docs/images/lunar-exploration.png)
 

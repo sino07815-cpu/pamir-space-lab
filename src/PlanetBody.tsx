@@ -5,8 +5,9 @@ import { planets,useGame } from './store';
 import { useExpedition } from './expeditionStore';
 import texture,{cloudTexture,localTexture} from './planetTextures';
 import { planetVisuals } from './planetVisuals';
+import { SPACE_SUN_DIRECTION } from './solarLighting';
 
-const sunlight=new THREE.Vector3(30,20,25).normalize();
+const sunlight=new THREE.Vector3(...SPACE_SUN_DIRECTION).normalize();
 const atmosphereVertex=`varying vec3 worldNormal; varying vec3 worldPosition;
 void main(){vec4 p=modelMatrix*vec4(position,1.);worldPosition=p.xyz;worldNormal=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*viewMatrix*p;}`;
 const atmosphereFragment=`uniform vec3 tint;uniform vec3 sun;varying vec3 worldNormal;varying vec3 worldPosition;
