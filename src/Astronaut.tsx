@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { useGame } from './store';
 import { labelTexture,surfaceTexture } from './visualTextures';
 export default function Astronaut({moving,jumping,interacting}:{moving:RefObject<number>;jumping:RefObject<number>;interacting:RefObject<boolean>}){
+  const lunar=useGame(s=>s.surface==='Moon');
   const root=useRef<THREE.Group>(null),arms=useRef<(THREE.Group|null)[]>([]),legs=useRef<(THREE.Group|null)[]>([]),knees=useRef<(THREE.Group|null)[]>([]);
   const resources=useMemo(()=>{
     const weave=surfaceTexture('cloth');weave.repeat.set(6,6);const helmet=labelTexture('СССР','#b93426'),patch=labelTexture('Ю. ГАГАРИН','#252b2d','#d6cbb3',512,128);
@@ -34,7 +35,7 @@ export default function Astronaut({moving,jumping,interacting}:{moving:RefObject
     <mesh position={[0,1.72,.016]} material={r.white} castShadow><sphereGeometry args={[.224,40,28,-Math.PI*.15,Math.PI*1.3]}/></mesh>
     <mesh position={[0,1.72,.016]} material={r.white} castShadow><sphereGeometry args={[.225,40,20,0,Math.PI*2,0,.83]}/></mesh>
     <mesh position={[0,1.72,-.153]} scale={[1,.94,1]} material={r.rubber}><torusGeometry args={[.176,.013,8,40]}/></mesh>
-    <mesh position={[0,1.72,-.012]} scale={[1,.94,.86]}><sphereGeometry args={[.205,36,24,Math.PI,Math.PI]}/><meshPhysicalMaterial color="#d9eef4" transparent opacity={.13} roughness={.07} metalness={.05} clearcoat={1} depthWrite={false}/></mesh>
+    <mesh position={[0,1.72,-.012]} scale={[1,.94,.86]}><sphereGeometry args={[.205,36,24,Math.PI,Math.PI]}/><meshPhysicalMaterial color={lunar?'#334554':'#d9eef4'} transparent opacity={lunar?.92:.13} roughness={lunar?.16:.07} metalness={lunar?.5:.05} clearcoat={1} depthWrite={false}/></mesh>
     <mesh position={[0,1.883,-.148]} rotation={[.65,Math.PI,0]}><planeGeometry args={[.20,.053]}/><meshBasicMaterial map={r.helmet} transparent depthWrite={false} polygonOffset polygonOffsetFactor={-1}/></mesh>
     {[-1,1].map(side=><group key={side}>
       <mesh position={[side*.216,1.70,-.018]} rotation={[0,0,Math.PI/2]} material={r.metal}><cylinderGeometry args={[.033,.033,.035,12]}/></mesh>
@@ -65,7 +66,7 @@ export default function Astronaut({moving,jumping,interacting}:{moving:RefObject
     <mesh position={[0,1.30,-.18]} rotation={[0,Math.PI,0]}><planeGeometry args={[.17,.044]}/><meshBasicMaterial map={r.patch}/></mesh>
     <mesh position={[.03,1.19,-.184]} material={r.metal}><boxGeometry args={[.135,.10,.025]}/></mesh>
     {[-1,1].map(side=><mesh key={side} position={[side*.035+.03,1.19,-.202]} rotation={[Math.PI/2,0,0]} material={r.rubber}><cylinderGeometry args={[.017,.017,.015,12]}/></mesh>)}
-    <mesh position={[0,1.22,.22]} scale={[.175,.235,.10]} material={r.white} castShadow><sphereGeometry args={[1,24,16]}/></mesh>
+    {lunar?<group><mesh position={[0,1.23,.24]} material={r.white} castShadow><boxGeometry args={[.37,.5,.23]}/></mesh>{[-1,1].map(side=><mesh key={side} position={[side*.195,1.23,.25]} material={r.metal}><cylinderGeometry args={[.018,.018,.40,10]}/></mesh>)}<mesh position={[0,1.39,.36]} material={r.rubber}><boxGeometry args={[.18,.025,.018]}/></mesh></group>:<mesh position={[0,1.22,.22]} scale={[.175,.235,.10]} material={r.white} castShadow><sphereGeometry args={[1,24,16]}/></mesh>}
     <mesh position={[0,1.23,.315]} material={r.cloth}><boxGeometry args={[.20,.15,.025]}/></mesh><mesh geometry={r.hose} material={r.rubber}/>
   </group>;
 }

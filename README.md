@@ -18,6 +18,12 @@ Allow **3–5 minutes**. The model route completes in about 146 simulated second
 
 [Presentation script](DEMO_SCRIPT.md) · [Release checklist](RELEASE_CHECKLIST.md) · [Detailed gameplay guide](GAMEPLAY_GUIDE.md)
 
+## Lunar exploration update
+
+The Moon scene now has cratered regolith, continuous distant ridges, a small distant Earth, ground-contact shadows, a brushed-metal reusable lander with landing gear and a walking boot trail. Its compact survey/descent HUD also supports touch controls. See [lunar visuals and verification](LUNAR_VISUALS.md).
+
+![Actual lunar gameplay renderer, isolated review scene](docs/images/lunar-exploration.png)
+
 ## Why it matters
 
 Space exploration requires decisions, observation and evidence. This prototype makes learners practice those actions rather than only reading facts. Landing velocity and fuel affect success; scientific objects require proximity and distinct collection; sample analysis connects exploration with research.
@@ -91,7 +97,7 @@ This is an educational game simulation: travel distances and time are compressed
 
 React + TypeScript + Vite; React Three Fiber, Drei and Three.js for rendering; Zustand for game state and local persistence; Tailwind/CSS and Lucide for the interface. Procedural geometry and instancing reduce reliance on downloaded models. No backend or user account is needed.
 
-`npm test` runs 17 suites for flight, mission progression, landings, collision, proximity, duplicate rewards, persistence, docking/EVA, research, protected presentation saves, planet maps, orbit layout, spaceport access, contextual guidance and deployment asset paths. These automated model tests do not replace visual review, a manual playthrough or performance measurements on the presentation laptop. See [the checklist](RELEASE_CHECKLIST.md) for outstanding manual checks.
+`npm test` runs 18 suites for flight, mission progression, landings, collision, proximity, duplicate rewards, persistence, docking/EVA, research, protected presentation saves, planet maps, orbit layout, spaceport access, contextual guidance and deployment asset paths. These automated model tests do not replace visual review, a manual playthrough or performance measurements on the presentation laptop. See [the checklist](RELEASE_CHECKLIST.md) for outstanding manual checks.
 
 GitHub Actions verifies tests and the production build on pushes and pull requests. **Publish playable demo** is a manually triggered GitHub Pages workflow. Set repository Settings → Pages → Source to GitHub Actions before running it. A hosted URL is live only after that workflow succeeds. Relative asset paths support hosting under `/pamir-space-lab/`.
 

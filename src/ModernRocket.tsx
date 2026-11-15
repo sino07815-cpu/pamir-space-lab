@@ -12,14 +12,14 @@ function Engines({booster=false}:{booster?:boolean}){
   useLayoutEffect(()=>{if(!mesh.current)return;const dummy=new THREE.Object3D();positions.forEach(([x,z],i)=>{dummy.position.set(x,.20,z);dummy.updateMatrix();mesh.current!.setMatrixAt(i,dummy.matrix);});mesh.current.instanceMatrix.needsUpdate=true;},[positions]);
   return <instancedMesh ref={mesh} args={[undefined,undefined,positions.length]} castShadow><cylinderGeometry args={[booster?.075:.12,booster?.13:.24,.38,12,1,true]}/><meshStandardMaterial color="#3d464e" metalness={.8} roughness={.35} side={THREE.DoubleSide}/></instancedMesh>;
 }
-export function UpperStage(){
+export function UpperStage({lunar=false}:{lunar?:boolean}={}){
   const r=useMemo(()=>{
     const brushed=surfaceTexture('steel');brushed.repeat.set(10,1);const tiles=surfaceTexture('tiles');tiles.repeat.set(9,15);
-    const steel=new THREE.MeshStandardMaterial({color:'#c2c9cd',metalness:.92,roughness:.28,bumpMap:brushed,bumpScale:.004});
+    const steel=new THREE.MeshStandardMaterial({color:'#c2c9cd',metalness:lunar?.82:.92,roughness:lunar?.4:.28,envMapIntensity:lunar?1.35:1,bumpMap:brushed,bumpScale:.004});
     const shield=new THREE.MeshStandardMaterial({map:tiles,color:'#b5b6bb',roughness:.86,metalness:.12});
     const nosePoints=Array.from({length:33},(_,i)=>{const t=i/32;return new THREE.Vector2(1.15*(1-t*t),8.8+t*3.6);});
     return {brushed,tiles,steel,shield,nose:new THREE.LatheGeometry(nosePoints,64),noseShield:new THREE.LatheGeometry(nosePoints.map(p=>new THREE.Vector2(p.x+.008,p.y)),48,Math.PI/2,Math.PI),wordmark:labelTexture('PAMIR','#202c34'),mission:labelTexture('BEYOND EARTH','#26343f',undefined,1024,128)};
-  },[]);
+  },[lunar]);
   useEffect(()=>()=>Object.values(r).forEach(value=>value.dispose()),[r]);
   return <group name="Pamir-stainless-upper-stage">
     <mesh position={[0,4.65,0]} material={r.steel} castShadow><cylinderGeometry args={[1.15,1.15,8.3,64]}/></mesh>

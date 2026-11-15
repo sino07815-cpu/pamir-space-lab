@@ -21,7 +21,7 @@ Touch uses the existing flight, landing, walking, sample, repair and rover simul
 
 ## Verification
 
-`npm test` includes 17 suites. The touch suite checks joystick deadzone/clamping, independent fingers, keyboard coexistence, real flight acceleration/braking/steering, single interaction edges and cancellation/reset.
+`npm test` includes 18 suites. The touch suite checks joystick deadzone/clamping, independent fingers, keyboard coexistence, real flight acceleration/braking/steering, single interaction edges and cancellation/reset.
 
 `node scripts/qa-touch.mjs` is an optional Windows Chrome check using an isolated profile and trusted CDP touch events. It checks 390×844 and 844×390 layouts, actual Earth walking, multi-touch, cancellation, pause, spacecraft acceleration/rotation, camera switching, landing thrust and dashboard access. Its mission state fixtures start scenes directly; it is not a claim of a complete manual mission playthrough. Screenshots and the result report are written to ignored `artifacts/mobile/` only after the relevant steps run. Browser emulation does not certify every physical Android/iOS device.
 
