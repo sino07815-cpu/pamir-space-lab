@@ -51,9 +51,13 @@ npm run build
 npm run preview -- --port 4173
 ```
 
-Open http://127.0.0.1:4173/ and keep the terminal running. A WebGL-capable desktop browser with hardware acceleration is required. Choose LOW graphics on slower hardware. Audio starts only after clicking its button.
+Open http://127.0.0.1:4173/ and keep the terminal running. A WebGL-capable desktop browser with hardware acceleration is required. Choose LOW graphics on slower hardware. Audio unlocks on a normal gameplay-start click, or with **ENABLE SOUND**. Explicit mute is remembered; use the footer mixer for volume and test sounds.
 
 The source-level tests use Node's TypeScript stripping (Node 22.18+ or 24). Dependencies must be downloaded once; the installed local game uses bundled assets and can run without venue internet. Optional NASA reference links require internet.
+
+## Sound update
+
+An original generated soundscape now covers engines, landings, footsteps, rover/robot motors, samples, probes, docking, alarms, interface actions and mission completion. **ENABLE SOUND** and the footer mixer provide volume, mute and playable previews. See [Sound design and verification](SOUND.md).
 
 ## Controls
 
@@ -81,7 +85,7 @@ This is an educational game simulation: travel distances and time are compressed
 
 React + TypeScript + Vite; React Three Fiber, Drei and Three.js for rendering; Zustand for game state and local persistence; Tailwind/CSS and Lucide for the interface. Procedural geometry and instancing reduce reliance on downloaded models. No backend or user account is needed.
 
-`npm test` runs 15 suites for flight, mission progression, landings, collision, proximity, duplicate rewards, persistence, docking/EVA, research, protected presentation saves, planet maps, orbit layout, spaceport access, contextual guidance and deployment asset paths. These automated model tests do not replace visual review, a manual playthrough or performance measurements on the presentation laptop. See [the checklist](RELEASE_CHECKLIST.md) for outstanding manual checks.
+`npm test` runs 16 suites for flight, mission progression, landings, collision, proximity, duplicate rewards, persistence, docking/EVA, research, protected presentation saves, planet maps, orbit layout, spaceport access, contextual guidance and deployment asset paths. These automated model tests do not replace visual review, a manual playthrough or performance measurements on the presentation laptop. See [the checklist](RELEASE_CHECKLIST.md) for outstanding manual checks.
 
 GitHub Actions verifies tests and the production build on pushes and pull requests. **Publish playable demo** is a manually triggered GitHub Pages workflow. Set repository Settings → Pages → Source to GitHub Actions before running it. A hosted URL is live only after that workflow succeeds. Relative asset paths support hosting under `/pamir-space-lab/`.
 

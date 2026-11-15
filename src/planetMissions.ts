@@ -24,9 +24,9 @@ export function robotHeight(planet:RobotPlanet,x:number,z:number){
  return h*flat;
 }
 export const robotRocks=Array.from({length:95},(_,i)=>({x:Math.sin(i*31.31)*92,z:Math.cos(i*17.19)*92,r:.35+i%5*.23})).filter(r=>Math.hypot(r.x,r.z)>10&&!robotTargets.some(t=>Math.hypot(r.x-t.x,r.z-t.z)<4));
-export function resolveRobot(x:number,z:number,oldX=x,oldZ=z):[number,number]{
+export function resolveRobot(x:number,z:number,oldX=x,oldZ=z,lander:[number,number]=[0,0]):[number,number]{
  x=Math.max(-98,Math.min(98,x));z=Math.max(-98,Math.min(98,z));
- for(const rock of [...robotRocks,{x:0,z:0,r:3}]){const dx=x-rock.x,dz=z-rock.z,d=Math.hypot(dx,dz),radius=rock.r+.65;if(d<radius){x=rock.x+(d?dx/d:1)*radius;z=rock.z+(d?dz/d:0)*radius;}}
+ for(const rock of [...robotRocks,{x:lander[0],z:lander[1],r:3}]){const dx=x-rock.x,dz=z-rock.z,d=Math.hypot(dx,dz),radius=rock.r+.65;if(d<radius){x=rock.x+(d?dx/d:1)*radius;z=rock.z+(d?dz/d:0)*radius;}}
  return Number.isFinite(x)&&Number.isFinite(z)?[x,z]:[oldX,oldZ];
 }
 export function stableOrbit(g:{surface:string|null;distance:number;speed:number;autopilot:boolean;paused:boolean;uiBlocked:boolean},mode='flight',dock='free'){
