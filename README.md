@@ -6,6 +6,10 @@ Pilot a spacecraft, learn the constraints of a safe planetary landing, explore a
 
 ## Start here, judges
 
+### [▶ PLAY IN YOUR BROWSER](https://sino07815-cpu.github.io/pamir-space-lab/)
+
+No installation or account required. Use a laptop or desktop with a WebGL-capable browser. Click **ENABLE SOUND**, then **JUDGE BRIEFING / DEMO GUIDE** for the presentation route. The live link becomes available after the repository's **Publish playable demo** deployment succeeds.
+
 Open the game and choose **JUDGE BRIEFING / DEMO GUIDE → START PROTECTED PRESENTATION**. The guided route demonstrates Gateway docking, orbital EVA repair, a Mars landing, sample collection and laboratory analysis using the actual gameplay actions. Normal progress is protected and restored when the presentation ends.
 
 Allow **3–5 minutes**. The model route completes in about 146 simulated seconds; wall-clock duration depends on rendering and pauses. The separate Mars Judge Demo takes about 201 simulated seconds and replaces the current Red Horizon run. The briefing explains that difference before starting.
