@@ -6,4 +6,5 @@ import {gameplay} from './gameplay.ts';
 import {science} from './science.ts';
 import {operations} from './operations.ts';
 import {archive} from './archive.ts';
-export const messages:Array<[string,string,string]>=[...core,...details,...narrative,...gameplay,...science,...operations,...archive];
+import {coaching} from './coaching.ts';
+export const messages:Array<[string,string,string]>=[...core,...details,...narrative,...gameplay,...science,...operations,...archive,...coaching];

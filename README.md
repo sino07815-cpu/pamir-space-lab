@@ -38,6 +38,8 @@ Choose **SOLAR SYSTEM MISSIONS** from the menu or Mission Control. Mercury and V
 
 ## Implemented gameplay
 
+**Mission guidance:** a field guide covers 12 mission paths with ordered tasks, short scientific explanations, actual progress and post-mission takeaways. Amber beacons identify the next interaction; phone players tap the compact next-task strip. See [mission guidance and validation](MISSION_GUIDANCE.md).
+
 - Eight planets and the Moon with locally bundled, attributed maps, relative mean-size ratios and display rotation.
 - Spacecraft acceleration, steering, chase/cockpit cameras, navigation, surveys and persistent scores.
 - Fictional Earth launch complex with a walkable campus, alpine landscape and reusable-rocket ascent.
