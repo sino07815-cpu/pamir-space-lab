@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import {keys,pressInput,releaseInput,releaseInputSources,consume,resetInput,steering,stickInput} from '../src/inputState.ts';
+import {accelerateFlight,steerFlight} from '../src/flight.ts';
+resetInput();
+assert.deepEqual(stickInput(0,0).codes,[]);assert.deepEqual(stickInput(4,-4).codes,[]);
+const forward=stickInput(0,-100);assert.deepEqual(forward.codes,['KeyW']);assert.equal(forward.y,-42);
+const diagonal=stickInput(100,-100);assert.deepEqual(diagonal.codes,['KeyD','KeyW']);assert(Math.abs(Math.hypot(diagonal.x,diagonal.y)-42)<1e-8);
+assert.equal(pressInput('KeyW','touch:stick'),true);assert.equal(pressInput('KeyW','touch:stick'),false);assert(consume('KeyW'));assert(!consume('KeyW'),'One press must generate one edge');
+pressInput('KeyW','keyboard:KeyW');releaseInput('KeyW','touch:stick');assert(keys.has('KeyW'),'A finger release must not cancel the physical keyboard');releaseInput('KeyW','keyboard:KeyW');assert(!keys.has('KeyW'));
+pressInput('KeyW','touch:stick');pressInput('Space','touch:button:1');pressInput('Space','touch:button:2');releaseInputSources('touch:button:1');assert(keys.has('Space'),'A second finger can still hold thrust');releaseInputSources('touch:button:2');assert(!keys.has('Space'));assert(keys.has('KeyW'),'Thrust release must not release movement');
+const v=new THREE.Vector3(),q=new THREE.Quaternion();for(let i=0;i<60;i++)accelerateFlight(v,q,keys,1/60);assert(v.z< -8,'Joystick input drives real flight acceleration');
+const cruising=v.length();pressInput('Space','touch:button:3');for(let i=0;i<60;i++)accelerateFlight(v,q,keys,1/60);assert(v.length()<cruising*.65,'Touch brake reduces speed even while another finger holds thrust');releaseInput('KeyW','touch:stick');for(let i=0;i<60;i++)accelerateFlight(v,q,keys,1/60);assert(v.length()<.1,'Release thrust and brake to stop');
+steerFlight(q,keys,180,50,.016);assert(q.angleTo(new THREE.Quaternion())>.2,'Swipe delta rotates the flight attitude');
+pressInput('KeyE','touch:button:4');assert(consume('KeyE'));assert(!consume('KeyE'),'Collection cannot repeat without another press');releaseInputSources('touch:');assert.equal(keys.size,0);
+pressInput('ShiftLeft','keyboard:ShiftLeft');pressInput('KeyE','touch:button:4');releaseInputSources('touch:');assert(keys.has('ShiftLeft'),'Hiding touch UI preserves unrelated keyboard holds');
+steering.x=80;steering.y=60;resetInput();assert.equal(keys.size,0);assert(!consume('KeyE'));assert.deepEqual(steering,{x:0,y:0});pressInput('KeyE','touch:button:4');assert(consume('KeyE'),'A cancelled input source can press again');resetInput();
+console.log('Touch input passed: joystick deadzone/clamp, multi-finger ownership, keyboard coexistence, real flight movement/braking/steering, one-shot interactions and reset.');

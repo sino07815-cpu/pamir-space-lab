@@ -1,0 +1,34 @@
+// Smoke test for the real deployed game; no gameplay state injection or test bridge.
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import {spawn} from 'node:child_process';
+const url=process.env.PAMIR_GAME_URL??'https://sino07815-cpu.github.io/pamir-space-lab/';
+const out=path.resolve('artifacts/mobile'),wait=ms=>new Promise(r=>setTimeout(r,ms));await fs.mkdir(out,{recursive:true});
+const profile=await fs.mkdtemp(path.join(os.tmpdir(),'pamir-mobile-live-'));
+const browser=spawn(process.env.CHROME_PATH??'C:/Program Files/Google/Chrome/Application/chrome.exe',['--headless=new','--ignore-gpu-blocklist','--enable-webgl','--no-first-run','--no-default-browser-check','--disable-background-timer-throttling','--disable-renderer-backgrounding','--remote-debugging-port=0','--user-data-dir='+profile,'about:blank'],{windowsHide:true,stdio:'ignore'});
+let ws,seq=0;const pending=new Map(),checks=[],errors=[];
+try{
+ let port;for(let i=0;i<150&&!port;i++){try{port=(await fs.readFile(path.join(profile,'DevToolsActivePort'),'utf8')).split('\n')[0];}catch{await wait(200);}}if(!port)throw Error('Chrome unavailable');
+ const tab=await(await fetch(`http://127.0.0.1:${port}/json/new?about:blank`,{method:'PUT'})).json();ws=new WebSocket(tab.webSocketDebuggerUrl);await new Promise((r,j)=>{ws.onopen=r;ws.onerror=j;});
+ const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq,timer=setTimeout(()=>{pending.delete(id);reject(Error('Timeout '+method));},45000);pending.set(id,{resolve,reject,timer});ws.send(JSON.stringify({id,method,params}));});
+ ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){const p=pending.get(m.id);pending.delete(m.id);clearTimeout(p.timer);m.error?p.reject(m.error):p.resolve(m.result);}if(m.method==='Runtime.exceptionThrown')errors.push(m.params.exceptionDetails.exception?.description??m.params.exceptionDetails.text);};
+ const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
+ const check=(v,message)=>{if(!v)throw Error(message);checks.push(message);console.log('PASS '+message);};
+ const until=async expression=>{for(let i=0;i<160;i++){if(await evaluate(expression))return;await wait(250);}throw Error(expression+' '+await evaluate('document.body.innerText.slice(0,600)')+' '+errors.join('\n'));};
+ const point=selector=>evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+ const touch=(type,points)=>send('Input.dispatchTouchEvent',{type,touchPoints:points.map(p=>({...p,radiusX:4,radiusY:4,force:1}))});
+ const tap=async selector=>{const p=await point(selector);await touch('touchStart',[{id:1,...p}]);await wait(90);await touch('touchEnd',[]);await wait(400);};
+ const shot=async name=>{const r=await send('Page.captureScreenshot',{format:'png'});await fs.writeFile(path.join(out,name+'.png'),Buffer.from(r.data,'base64'));};
+ const fit=()=>evaluate("Array.from(document.querySelectorAll('.touch-action,.touch-stick,footer button')).filter(e=>e.getBoundingClientRect().width).every(e=>{const r=e.getBoundingClientRect();return r.x>=0&&r.y>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1})");
+ await send('Page.enable');await send('Runtime.enable');await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});
+ await send('Page.addScriptToEvaluateOnNewDocument',{source:"localStorage.clear();localStorage.setItem('pamir-audio-v1',JSON.stringify({state:{muted:true},version:0}));"});await send('Page.navigate',{url});await send('Page.bringToFront');
+ await until("!!document.querySelector('.touch-mode .hero')");check(true,'Public mobile menu loads at 390×844');await shot('live-01-phone-menu');
+ await tap('.hero-actions .primary');await until("!!document.querySelector('.touch-stick')");check(await fit(),'Phone game controls remain inside viewport');
+ const stick=await point('.touch-stick');await touch('touchStart',[{id:1,...stick}]);await touch('touchMove',[{id:1,x:stick.x,y:stick.y-36}]);await wait(1400);check(await evaluate("document.querySelector('.touch-stick i').style.transform.includes('-36')"),'Trusted touch moves the virtual joystick');
+ const jump=await point('[data-control=Space]');await touch('touchStart',[{id:1,x:stick.x,y:stick.y-36},{id:2,...jump}]);check(await evaluate("document.querySelector('[data-control=Space]').getAttribute('aria-pressed')==='true'"),'A second finger holds the action button');await touch('touchCancel',[]);await wait(200);check(await evaluate("document.querySelector('[data-control=Space]').getAttribute('aria-pressed')==='false'&&document.querySelector('.touch-stick i').style.transform==='translate(0px, 0px)'"),'Touch cancellation resets both controls');await shot('live-02-phone-earth');
+ await tap('footer button[aria-label="Pause game"]');await until("!!document.querySelector('.modal')");check(await evaluate("!document.querySelector('.touch-controls')"),'Pause removes mobile input');await tap('.modal .primary');await until("!!document.querySelector('.touch-stick')");
+ await send('Emulation.setDeviceMetricsOverride',{width:844,height:390,deviceScaleFactor:1,mobile:true});await wait(600);check(await fit(),'Landscape controls fit at 844×390');await shot('live-03-landscape-earth');
+ await tap('.topbar nav button:last-child');await until("!!document.querySelector('.dashboard')");check(await evaluate("!document.querySelector('.touch-controls')"),'Mission Control suspends game controls');await send('Input.synthesizeScrollGesture',{x:400,y:240,yDistance:-250,speed:600,gestureSourceType:'touch'});await wait(400);check(await evaluate("document.querySelector('.dashboard').scrollTop>0"),'Mission Control scrolls with touch');await shot('live-04-mission-control');
+ check(errors.length===0,'No runtime exceptions on the deployed phone route');await fs.writeFile(path.join(out,'live-verification.json'),JSON.stringify({url,checks,errors},null,2));await send('Browser.close').catch(()=>{});
+}finally{ws?.close();browser.kill();}
