@@ -1,0 +1,39 @@
+import { useEffect,useLayoutEffect,useMemo,useRef } from 'react';
+import { useFrame,useThree } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
+import * as THREE from 'three';
+import { useGame } from './store';
+import { useExpedition } from './expeditionStore';
+import { usePlanetMissions } from './planetMissionStore';
+import { robotHeight,robotTargets,robotRocks,resolveRobot,targetNames,type RobotPlanet } from './planetMissions';
+import { stepLanding } from './mars';
+import { keys,consume,steering,resetInput } from './input';
+import SurveyHardware from './SurveyHardware';
+import { surfaceTexture } from './visualTextures';
+
+function Terrain({planet}:{planet:RobotPlanet}){
+ const rocks=useRef<THREE.InstancedMesh>(null);const grain=useMemo(()=>{const map=surfaceTexture('concrete');map.repeat.set(60,60);return map;},[]);useEffect(()=>()=>grain.dispose(),[grain]);
+ const geometry=useMemo(()=>{const g=new THREE.PlaneGeometry(300,300,128,128);g.rotateX(-Math.PI/2);const a=g.attributes.position,colors:number[]=[];for(let i=0;i<a.count;i++){const x=a.getX(i),z=a.getZ(i),h=robotHeight(planet,x,z);a.setY(i,h);const c=new THREE.Color(planet==='Venus'?'#897252':'#727579');c.multiplyScalar(.76+Math.sin(x*.33+z*.23)*.07+Math.sin(x*.17-z*.2)*.08+(h+4)*.025);colors.push(c.r,c.g,c.b);}g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.computeVertexNormals();return g;},[planet]);
+ useEffect(()=>()=>geometry.dispose(),[geometry]);useLayoutEffect(()=>{const d=new THREE.Object3D();robotRocks.forEach((r,i)=>{d.position.set(r.x,robotHeight(planet,r.x,r.z)+r.r*.3,r.z);d.scale.set(r.r,r.r*.7,r.r);d.rotation.set(i*.3,i*1.23,i*.17);d.updateMatrix();rocks.current?.setMatrixAt(i,d.matrix);});if(rocks.current)rocks.current.instanceMatrix.needsUpdate=true;},[planet]);
+ return <><mesh geometry={geometry} receiveShadow><meshStandardMaterial vertexColors roughness={.98} bumpMap={grain} bumpScale={planet==='Mercury'?.13:.08}/></mesh><instancedMesh ref={rocks} args={[undefined,undefined,robotRocks.length]} castShadow receiveShadow><dodecahedronGeometry args={[1,1]}/><meshStandardMaterial color={planet==='Venus'?'#615549':'#616269'} roughness={.97}/></instancedMesh>{Array.from({length:12},(_,i)=><mesh key={i} position={[Math.sin(i*2.4)*160,-8,Math.cos(i*2.4)*160]} scale={[20+i%3*9,18+i%4*8,24]}><icosahedronGeometry args={[1,1]}/><meshStandardMaterial color={planet==='Venus'?'#746047':'#676b70'} roughness={1}/></mesh>)}</>;
+}
+export default function RoboticWorld(){
+ const robot=usePlanetMissions(s=>s.robot)!,records=usePlanetMissions(s=>s.records),camera=useThree(s=>s.camera),body=useRef<THREE.Group>(null),lander=useRef<THREE.Group>(null),flame=useRef<THREE.Mesh>(null),view=useRef({yaw:0,pitch:.2}),state=useRef(robot),timer=useRef(0);
+ useEffect(()=>{state.current=robot;resetInput();camera.up.set(0,1,0);if(robot.stage==='descent'){camera.position.set(robot.landing.x+13,robot.landing.altitude+9,robot.landing.z+18);camera.lookAt(robot.landing.x,robot.landing.altitude+2,robot.landing.z);}else{camera.position.set(robot.player[0],robotHeight(robot.planet,robot.player[0],robot.player[2])+4,robot.player[2]+7);}},[robot.planet,robot.stage,camera]);
+ useFrame((_,delta)=>{const g=useGame.getState(),e=useExpedition.getState(),s=usePlanetMissions.getState();if(!s.robot||g.paused||g.uiBlocked||!g.started||e.mode!=='flight')return;let r=state.current;const dt=Math.min(.04,delta);r={...r,elapsed:r.elapsed+dt};
+   if(r.stage==='descent'){const l=stepLanding({...r.landing,assisted:s.robot.landing.assisted},dt,keys.has('Space'),{x:(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0),z:(keys.has('KeyS')?1:0)-(keys.has('KeyW')?1:0)});r={...r,landing:l,stage:l.result==='safe'?'landed':l.result==='crashed'?'failed':'descent'};if(lander.current)lander.current.position.set(l.x,l.altitude,l.z);if(flame.current){flame.current.visible=l.throttle>.03;flame.current.position.set(l.x,l.altitude-.8,l.z);flame.current.scale.y=.5+l.throttle*2;}camera.position.lerp(new THREE.Vector3(l.x+13,l.altitude+9,l.z+18),1-Math.exp(-dt*3));camera.lookAt(l.x,l.altitude+2,l.z);
+   }else{if(lander.current)lander.current.position.set(r.landing.x,0,r.landing.z);if(flame.current)flame.current.visible=false;if(r.stage==='driving'){
+    view.current.yaw-=steering.x*.002;view.current.pitch=THREE.MathUtils.clamp(view.current.pitch+steering.y*.002,-.3,.7);steering.x=steering.y=0;view.current.yaw+=((keys.has('ArrowLeft')?1:0)-(keys.has('ArrowRight')?1:0))*dt;
+    const input=new THREE.Vector3((keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0),0,(keys.has('KeyS')?1:0)-(keys.has('KeyW')?1:0));if(input.lengthSq()>1)input.normalize();input.applyAxisAngle(new THREE.Vector3(0,1,0),view.current.yaw);const speed=r.energy<=0||keys.has('Space')?0:keys.has('ShiftLeft')?5:3;const [x,z]=resolveRobot(r.player[0]+input.x*speed*dt,r.player[2]+input.z*speed*dt,r.player[0],r.player[2]);const y=robotHeight(r.planet,x,z);r={...r,player:[x,y,z],speed:input.length()*speed,energy:Math.max(0,r.energy-dt*(input.lengthSq()>.01?.035:.008)),yaw:input.lengthSq()>.01?Math.atan2(-input.x,-input.z):r.yaw};
+    if(body.current){body.current.position.set(x,y,z);body.current.rotation.y=r.yaw;body.current.visible=!g.cockpit;}const offset=new THREE.Vector3(0,g.cockpit?2.25:3.6,g.cockpit?-.7:7).applyAxisAngle(new THREE.Vector3(0,1,0),view.current.yaw).add(new THREE.Vector3(x,y,z));offset.y=Math.max(offset.y,robotHeight(r.planet,offset.x,offset.z)+1);camera.position.lerp(offset,1-Math.exp(-dt*8));if(g.cockpit)camera.lookAt(new THREE.Vector3(0,1.2-view.current.pitch*4,-6).applyAxisAngle(new THREE.Vector3(0,1,0),view.current.yaw).add(new THREE.Vector3(x,y,z)));else camera.lookAt(x,y+1.1-view.current.pitch*2,z);
+    if(consume('KeyE')){s.updateRobot(r);s.interact();r=usePlanetMissions.getState().robot??r;}
+   }else if(consume('KeyE')&&r.stage==='landed'){s.deployRover();r=usePlanetMissions.getState().robot??r;}}
+   state.current=r;timer.current+=dt;if(timer.current>.1||r.stage!==s.robot.stage){timer.current=0;s.updateRobot(r);}
+ });
+ const venus=robot.planet==='Venus',done=records[robot.planet]?.done??[];
+ return <><color attach="background" args={[venus?'#8e6d43':'#02040a']}/><fog attach="fog" args={[venus?'#8e6d43':'#02040a',venus?25:140,venus?125:450]}/><hemisphereLight args={[venus?'#ead3a0':'#a9b4c5',venus?'#514632':'#34353b',venus?1.7:.38]}/><directionalLight position={[-40,30,15]} intensity={venus?1.7:4.1} color={venus?'#f9cd8b':'#fff5e4'} castShadow shadow-mapSize={[1024,1024]} shadow-camera-left={-60} shadow-camera-right={60} shadow-camera-top={60} shadow-camera-bottom={-60}/><Terrain planet={robot.planet}/>
+ <group ref={lander}><SurveyHardware kind="lander" venus={venus}/></group><mesh ref={flame} rotation={[Math.PI,0,0]}><coneGeometry args={[.65,2,20]}/><meshBasicMaterial color="#a8d9ff" transparent opacity={.65}/></mesh><group ref={body} visible={robot.stage==='driving'}><SurveyHardware venus={venus}/></group>
+ {robotTargets.map((site,i)=><group key={site.id} position={[site.x,robotHeight(robot.planet,site.x,site.z),site.z]}><mesh rotation={[-Math.PI/2,0,0]} position={[0,.04,0]}><ringGeometry args={[.95,1.05,40]}/><meshBasicMaterial color={done.includes(site.id)?'#88b3a0':'#e0b47e'}/></mesh>{venus&&i===2?<group scale={.55}><SurveyHardware kind="lander" venus/></group>:<mesh position={[0,.55,0]} scale={[1.2,.7,1]}><dodecahedronGeometry args={[.9,1]}/><meshStandardMaterial color={venus?'#655146':'#888684'} roughness={.95}/></mesh>}<Html center position={[0,2.4,0]} distanceFactor={19} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker">{site.id} · {targetNames[robot.planet][i]} {done.includes(site.id)?'✓':''}</div></Html></group>)}
+ <Html center position={[robot.landing.x,4.8,robot.landing.z+6]} distanceFactor={20} zIndexRange={[2,0]} style={{pointerEvents:'none'}}><div className="world-marker">LANDER UPLINK · E WITH ALL DATA</div></Html>
+ </>;
+}

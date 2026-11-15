@@ -10,7 +10,7 @@ export function useInputs(){
   useEffect(()=>{
     const down=(e:KeyboardEvent)=>{const s=useGame.getState();if(!s.started)return;
       if(e.code==='Escape'){if(!e.repeat){s.set({paused:!s.paused});document.exitPointerLock?.();resetInput();}return;}
-      if(s.uiBlocked||s.paused||(e.target as HTMLElement).closest('input,textarea,[contenteditable=true]'))return;
+      if(s.uiBlocked||s.paused||(e.target instanceof Element&&e.target.closest('input,textarea,[contenteditable=true]')))return;
       if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
       if(!e.repeat){edges.add(e.code);if(e.code==='KeyC')s.set({cockpit:!s.cockpit});if(e.code==='KeyF'&&!s.surface&&useExpedition.getState().mode==='flight')s.scan();}
       keys.add(e.code);

@@ -4,7 +4,7 @@ import { useGame,suspendProgressSave,type GameState } from './store.ts';
 import { initialMars } from './mars.ts';
 import { PORT,REPAIR,STATION_APPROACH,distance,docking,baseTerminals,stationTerminals,cabinTerminals,costs,affordable,freshMissions,missionDefinitions,type Vec3,type Suit,type Mode,type MissionId,type Mission,type Resources,type BuildKind,type EventId } from './expedition.ts';
 
-type Panel='briefing'|'missions'|'science'|'engineering'|'crew'|'navigation'|'construction'|'lab'|'habitat'|'oxygen'|'storage'|'antenna'|'settings'|null;
+type Panel='planetary'|'briefing'|'missions'|'science'|'engineering'|'crew'|'navigation'|'construction'|'lab'|'habitat'|'oxygen'|'storage'|'antenna'|'settings'|null;
 interface ExpeditionData {
   mode:Mode;dock:'free'|'capture'|'docked';capture:number;navStation:boolean;interior:[number,number];suit:Suit;anchor:Vec3;evaOrigin:'station'|'ship';
   missions:Record<MissionId,Mission>;resources:Resources;built:BuildKind[];badges:string[];repaired:boolean;events:Record<EventId,boolean>;stormTime:number;

@@ -2,7 +2,7 @@ import { heritageCollision } from './heritageData.ts';
 import { baseCollision,presentationBaseRoute } from './expedition.ts';
 import { freshSuit,freshMotion,freshRover,type SuitVitals,type SurfaceMotion,type RoverState,type SurfacePlanet } from './surfacePhysics.ts';
 export type MarsStage = 'space' | 'orbit' | 'approach' | 'descent' | 'landed' | 'eva' | 'failed' | 'complete';
-export interface Landing { altitude:number; velocity:number; fuel:number; throttle:number; elapsed:number; impact:number; assisted:boolean; result:'flying'|'safe'|'crashed'; x:number;z:number;vx:number;vz:number;horizontalSpeed:number;tilt:number;stability:number;padError:number;padX:number;padZ:number;gravity:number; }
+export interface Landing { altitude:number; velocity:number; fuel:number; throttle:number; elapsed:number; impact:number; assisted:boolean; result:'flying'|'safe'|'crashed'; x:number;z:number;vx:number;vz:number;horizontalSpeed:number;tilt:number;stability:number;padError:number;padX:number;padZ:number;gravity:number;dragCoefficient?:number; }
 export interface MarsMission { stage:MarsStage; objectives:string[]; elapsed:number; earned:number; landing:Landing; player:[number,number,number]; demo:boolean; demoTime:number; interactionUntil:number; suit:SuitVitals;motion:SurfaceMotion;rover:RoverState; }
 export const objectives = [
   ['land','Land successfully on Mars'], ['exit','Exit the spacecraft'],
@@ -51,7 +51,7 @@ export function stepLanding(previous:Landing,dt:number,manualThrust=false,contro
     const desired=-Math.min(12,Math.max(1.1,Math.sqrt(Math.max(0,s.altitude)*.7)));
     const ax=s.assisted?Math.max(-2.2,Math.min(2.2,-(s.x-s.padX)*.45-s.vx*1.4)):controls.x*2.2,az=s.assisted?Math.max(-2.2,Math.min(2.2,-(s.z-s.padZ)*.45-s.vz*1.4)):controls.z*2.2;
     s.vx+=((s.fuel>0?ax:0)-s.vx*.12)*h;s.vz+=((s.fuel>0?az:0)-s.vz*.12)*h;s.x+=s.vx*h;s.z+=s.vz*h;s.horizontalSpeed=Math.hypot(s.vx,s.vz);s.padError=Math.hypot(s.x-s.padX,s.z-s.padZ);s.tilt+=(Math.min(30,Math.hypot(ax,az)*6)-s.tilt)*Math.min(1,h*4);s.stability=Math.max(0,100-s.tilt*2);
-    const drag=s.gravity>2?-.008*s.velocity*Math.abs(s.velocity):0;const thrust=s.gravity*2.43;const vertical=Math.cos(s.tilt*Math.PI/180);
+    const drag=-(s.dragCoefficient??(s.gravity>2?.008:0))*s.velocity*Math.abs(s.velocity);const thrust=s.gravity*2.43;const vertical=Math.cos(s.tilt*Math.PI/180);
     const demand=s.assisted?Math.max(0,Math.min(1,(s.gravity-drag+(desired-s.velocity)*1.8)/(thrust*vertical))):(manualThrust?1:0);
     s.throttle=s.fuel>0?demand:0;s.fuel=Math.max(0,s.fuel-(s.throttle*1.8+Math.hypot(ax,az)*.03)*h);
     s.velocity+=(s.throttle*thrust*vertical-s.gravity+drag)*h;s.altitude=Math.max(0,s.altitude+s.velocity*h);s.elapsed+=h;
